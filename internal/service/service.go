@@ -1,27 +1,38 @@
 package service
 
 import (
+	"context"
 	"math/rand/v2"
-	"time"
 
 	"github.com/selfharm-enj/otus_m2_hw9/internal/model"
 )
 
-func GenerateData(ch chan<- model.IDReader) {
+func GenerateData(ctx context.Context, ch chan<- model.IDReader) {
 	for {
-		time.Sleep(1 * time.Second)
-		if rand.IntN(2) == 0 {
-			ch <- &model.File{
-				ID:   rand.IntN(10),
-				Path: randPath(15),
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			var v model.IDReader
+			if rand.IntN(2) == 0 {
+				v = &model.File{
+					ID:   rand.IntN(1000),
+					Path: randPath(15),
+				}
+			} else {
+				v = &model.Image{
+					ID:   rand.IntN(1000),
+					Path: randPath(15),
+				}
 			}
-		} else {
-			ch <- &model.Image{
-				ID:   rand.IntN(10),
-				Path: randPath(15),
+			select {
+			case ch <- v:
+			case <-ctx.Done():
+				return
 			}
 		}
 	}
+
 }
 
 func randPath(n int) string {
@@ -33,6 +44,6 @@ func randPath(n int) string {
 	return string(b)
 }
 
-func StartService(ch chan<- model.IDReader) {
-	go GenerateData(ch)
+func StartService(ctx context.Context, ch chan<- model.IDReader) {
+	go GenerateData(ctx, ch)
 }

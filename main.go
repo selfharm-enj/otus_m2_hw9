@@ -15,17 +15,13 @@ import (
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
-
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
-
 	if err := repository.InitData(); err != nil {
 		fmt.Printf("Error initializing data: %v\n", err)
 	}
-
 	dataCh := make(chan model.IDReader)
-
-	service.StartService(dataCh)
+	service.StartService(ctx, dataCh)
 
 	go func() {
 		for {
@@ -43,7 +39,7 @@ func main() {
 	}()
 
 	go func() {
-		service.LogChanges()
+		service.LogChanges(ctx)
 	}()
 
 	<-sigCh

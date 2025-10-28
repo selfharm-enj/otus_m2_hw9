@@ -88,3 +88,33 @@ func FilesImagesItems() {
 	fmt.Printf("Files: %v\t", Files)
 	fmt.Printf("Images: %v\n\n", Images)
 }
+
+func LastNFiles(n int) []model.File {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if n <= 0 {
+		return nil
+	}
+	if n > len(Files) {
+		n = len(Files)
+	}
+	result := make([]model.File, n)
+	copy(result, Files[len(Files)-n:])
+	return result
+}
+
+func LastNImages(n int) []model.Image {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if n <= 0 {
+		return nil
+	}
+	if n > len(Images) {
+		n = len(Images)
+	}
+	result := make([]model.Image, n)
+	copy(result, Images[len(Images)-n:])
+	return result
+}
